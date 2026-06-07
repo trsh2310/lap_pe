@@ -1,0 +1,74 @@
+{
+  "model": "tisasrec",
+  "dataset": "Amazon2014-Beauty",
+  "selected_by": "test/ndcg@10",
+  "best_k": 64,
+  "best_run": "2026-05-28/tisasrec_mti_64__Amazon2014-Beauty__10-30-02",
+  "best_metrics": {
+    "val/ndcg@100": 0.033594162657363834,
+    "val/ndcg@10": 0.015447038467826286,
+    "val/recall@100": 0.12730287398673545,
+    "val/recall@10": 0.0315033161385409,
+    "val/coverage@100": 0.8769523179902488,
+    "val/coverage@10": 0.5234278158829849,
+    "additional_cfg_params": {
+      "n_epochs": 24
+    },
+    "test/ndcg@100": 0.038657084275253224,
+    "test/ndcg@100_std": 0.0008430144332702332,
+    "test/ndcg@100_ci_low": 0.03805402807856552,
+    "test/ndcg@100_ci_high": 0.03926014047194093,
+    "test/ndcg@10": 0.018587484208599535,
+    "test/ndcg@10_std": 0.0008139935997042484,
+    "test/ndcg@10_ci_low": 0.01800518826562079,
+    "test/ndcg@10_ci_high": 0.01916978015157828,
+    "test/recall@100": 0.14148923837815924,
+    "test/recall@100_std": 0.0018336455430481644,
+    "test/recall@100_ci_low": 0.140177527375805,
+    "test/recall@100_ci_high": 0.1428009493805135,
+    "test/recall@10": 0.03611887454193823,
+    "test/recall@10_std": 0.0011847231552661436,
+    "test/recall@10_ci_low": 0.0352713746511343,
+    "test/recall@10_ci_high": 0.036966374432742165,
+    "test/coverage@100": 0.9217089496735806,
+    "test/coverage@100_std": 0.0010001867145225684,
+    "test/coverage@100_ci_low": 0.9209934592000691,
+    "test/coverage@100_ci_high": 0.9224244401470921,
+    "test/coverage@10": 0.603553425336749,
+    "test/coverage@10_std": 0.001159026016975553,
+    "test/coverage@10_ci_low": 0.6027243080712854,
+    "test/coverage@10_ci_high": 0.6043825426022127
+  },
+  "candidates": [
+    {
+      "k": 16,
+      "test/ndcg@10": 0.01762917714998604,
+      "val/ndcg@10": 0.01410445866342443,
+      "run": "2026-05-28/tisasrec_mti_16__Amazon2014-Beauty__09-56-13"
+    },
+    {
+      "k": 64,
+      "test/ndcg@10": 0.018587484208599535,
+      "val/ndcg@10": 0.015447038467826286,
+      "run": "2026-05-28/tisasrec_mti_64__Amazon2014-Beauty__10-30-02"
+    },
+    {
+      "k": 256,
+      "test/ndcg@10": 0.016243579441732763,
+      "val/ndcg@10": 0.014295592885563152,
+      "run": "2026-05-28/tisasrec_mti_256__Amazon2014-Beauty__11-16-09"
+    },
+    {
+      "k": 512,
+      "test/ndcg@10": 0.01761513441140072,
+      "val/ndcg@10": 0.014889890706529843,
+      "run": "2026-05-28/tisasrec_mti_512__Amazon2014-Beauty__12-06-32"
+    },
+    {
+      "k": 1024,
+      "test/ndcg@10": 0.017432106059450024,
+      "val/ndcg@10": 0.015159035675727642,
+      "run": "2026-05-28/tisasrec_mti_1024__Amazon2014-Beauty__12-40-19"
+    }
+  ]
+}

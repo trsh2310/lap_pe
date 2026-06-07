@@ -1,0 +1,74 @@
+{
+  "model": "tisasrec",
+  "dataset": "MovieLens-1M",
+  "selected_by": "test/ndcg@10",
+  "best_k": 16,
+  "best_run": "2026-05-27/tisasrec_mti_16__MovieLens-1M__14-42-40",
+  "best_metrics": {
+    "val/ndcg@100": 0.2115179704635795,
+    "val/ndcg@10": 0.14420424303498203,
+    "val/recall@100": 0.5691554467564259,
+    "val/recall@10": 0.24357405140758873,
+    "val/coverage@100": 0.9086651053864169,
+    "val/coverage@10": 0.46633489461358313,
+    "additional_cfg_params": {
+      "n_epochs": 25
+    },
+    "test/ndcg@100": 0.18252462225153288,
+    "test/ndcg@100_std": 0.004146292192437007,
+    "test/ndcg@100_ci_low": 0.17955854349742753,
+    "test/ndcg@100_ci_high": 0.18549070100563822,
+    "test/ndcg@10": 0.10654145724424713,
+    "test/ndcg@10_std": 0.005260486160546738,
+    "test/ndcg@10_ci_low": 0.10277833214044393,
+    "test/ndcg@10_ci_high": 0.11030458234805032,
+    "test/recall@100": 0.5827700422544357,
+    "test/recall@100_std": 0.007920010062011871,
+    "test/recall@100_ci_low": 0.5771044083610785,
+    "test/recall@100_ci_high": 0.588435676147793,
+    "test/recall@10": 0.20707572174392044,
+    "test/recall@10_std": 0.009761913753339088,
+    "test/recall@10_ci_low": 0.20009246932480676,
+    "test/recall@10_ci_high": 0.21405897416303413,
+    "test/coverage@100": 0.9136124121779859,
+    "test/coverage@100_std": 0.00356788086890347,
+    "test/coverage@100_ci_low": 0.9110601039586722,
+    "test/coverage@100_ci_high": 0.9161647203972997,
+    "test/coverage@10": 0.5221018735362997,
+    "test/coverage@10_std": 0.004663977691483895,
+    "test/coverage@10_ci_low": 0.5187654648853212,
+    "test/coverage@10_ci_high": 0.5254382821872782
+  },
+  "candidates": [
+    {
+      "k": 16,
+      "test/ndcg@10": 0.10654145724424713,
+      "val/ndcg@10": 0.14420424303498203,
+      "run": "2026-05-27/tisasrec_mti_16__MovieLens-1M__14-42-40"
+    },
+    {
+      "k": 64,
+      "test/ndcg@10": 0.09532290180580594,
+      "val/ndcg@10": 0.1486428880464999,
+      "run": "2026-05-27/tisasrec_mti_64__MovieLens-1M__14-56-19"
+    },
+    {
+      "k": 256,
+      "test/ndcg@10": 0.10226511573010381,
+      "val/ndcg@10": 0.1483707990477821,
+      "run": "2026-05-27/tisasrec_mti_256__MovieLens-1M__15-06-03"
+    },
+    {
+      "k": 512,
+      "test/ndcg@10": 0.10620530379905771,
+      "val/ndcg@10": 0.14462827726216243,
+      "run": "2026-05-27/tisasrec_mti_512__MovieLens-1M__15-18-56"
+    },
+    {
+      "k": 1024,
+      "test/ndcg@10": 0.09969646968347913,
+      "val/ndcg@10": 0.14348059704329,
+      "run": "2026-05-27/tisasrec_mti_1024__MovieLens-1M__15-26-53"
+    }
+  ]
+}

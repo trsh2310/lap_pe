@@ -1,0 +1,3 @@
+_target_: src.datasets.RecSysDataset
+name: gowalla_checkins_input
+url: ""

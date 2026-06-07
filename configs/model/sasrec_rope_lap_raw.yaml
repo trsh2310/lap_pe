@@ -1,0 +1,30 @@
+_target_: src.models.SASRecRoPELapRaw
+name: "sasrec_rope_lap_raw"
+seed: 42
+device: "cuda"
+
+lr: 0.007155250682439438
+n_epochs: 1000
+
+hidden_size: 64
+num_blocks: 2
+num_heads: 1
+dropout: 0.5
+seq_len: 200
+batch_size: 256
+filter_seen: True
+max_patience: 10
+
+k: null
+lap_eigvec_path: null
+lap_alpha: 0.05
+learnable_lap_gate: false
+lap_gate_init: -3.0
+lap_gate_activation: sigmoid
+rope_base: 10000.0
+
+lap_diagnostics_enabled: false
+lap_diagnostics_steps: [0, 10, 50, 100]
+lap_diagnostics_every_steps: 500
+lap_diagnostics_batch_size: null
+lap_diagnostics_output_path: null

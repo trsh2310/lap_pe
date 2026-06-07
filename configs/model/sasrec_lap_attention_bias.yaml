@@ -1,0 +1,24 @@
+_target_: src.models.sasrec_lap_attention_bias.SASRecLapAttentionBias
+name: "sasrec_lap_attention_bias"
+seed: 42
+device: "cuda"
+
+lr: 0.007155250682439438
+n_epochs: 1000
+
+hidden_size: 64
+num_blocks: 2
+num_heads: 1
+dropout: 0.5
+seq_len: 200
+batch_size: 256
+filter_seen: True
+max_patience: 10
+
+k: null
+lap_eigvec_path: null
+lap_bias_dim: 32
+position_encoding: rope
+lap_bias_mode: cosine
+lap_gate_init: -3.0
+rope_base: 10000.0

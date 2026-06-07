@@ -1,0 +1,38 @@
+_target_: src.models.SASRecMLP
+name: "sasrec_mlp"
+seed: 42
+device: "cuda"
+
+lr: 0.005
+n_epochs: 1000
+
+hidden_size: 128
+num_blocks: 2
+num_heads: 2
+dropout: 0.2
+seq_len: 200
+batch_size: 256
+filter_seen: true
+patience_per_epoch: 1
+max_patience: 10
+val_top_n: 10
+
+k: null
+use_input_lpe: true
+use_output_lpe: false
+use_absolute_pos_emb: false
+use_item_emb_scale: false
+lap_proj_mode: mlp
+lap_proj_hidden_mult: 2.0
+lap_proj_num_layers: 2
+lap_proj_dropout: null
+lap_proj_activation: gelu
+lap_proj_layer_norm: false
+input_lpe_gate: null
+output_lpe_gate: null
+learn_lpe_gates: true
+lpe_init_scale: null
+lap_eigvec_path: null
+lap_project_chunk_size: 1024
+item_chunk_size: 2048
+debug_lpe: false

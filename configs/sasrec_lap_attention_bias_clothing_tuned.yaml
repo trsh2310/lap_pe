@@ -1,0 +1,37 @@
+defaults:
+  - dataset: Amazon2014-Clothing-Shoes-And-Jewelry
+  - model: sasrec_lap_attention_bias
+  - metrics: base
+  - _self_
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${model.name}__${dataset.name}__${now:%H-%M-%S}
+  sweep:
+    dir: outputs/sweeps/${now:%Y-%m-%d}/${model.name}__${dataset.name}__${now:%H-%M-%S}
+
+seed: 42
+max_top_n: 100
+
+model:
+  name: sasrec_lap_attention_bias_clothing_tuned
+  seed: 42
+  device: cuda
+  lr: 0.00021124444422497844
+  n_epochs: 1000
+  hidden_size: 512
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.30000000000000004
+  seq_len: 200
+  batch_size: 256
+  filter_seen: true
+  max_patience: 10
+  k: 512
+  lap_eigvec_path: Amazon2014-Clothing-Shoes-And-Jewelry_eigvecs.npy
+  lap_bias_dim: 32
+  position_encoding: rope
+  lap_bias_mode: cosine
+  lap_gate_init: -3.0
+  rope_base: 10000.0
+

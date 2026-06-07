@@ -1,0 +1,12 @@
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10

@@ -1,0 +1,17 @@
+_target_: src.models.SASRecEinv
+name: "sasrec_einv"
+seed: 42
+device: "cuda"
+
+lr: 0.006770186482827876
+n_epochs: 500
+
+hidden_size: 128
+num_blocks: 2
+num_heads: 2
+dropout: 0.2
+seq_len: 200
+batch_size: 128
+filter_seen: True
+max_patience: 10
+k: 128
