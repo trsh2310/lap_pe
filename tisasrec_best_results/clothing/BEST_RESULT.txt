@@ -1,0 +1,4 @@
+Best by validation NDCG@10
+max_time_interval: 512
+val/ndcg@10: 0.011715318516665529
+directory: tisasrec_mti_512__Amazon2014-Clothing-Shoes-And-Jewelry__17-57-19

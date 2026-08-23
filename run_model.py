@@ -90,7 +90,11 @@ def run_train(cfg, verbose: bool = True, test_mode: bool = False):
     if verbose:
         logger.info(f"Start training...\n")
 
-    model.fit(train_dataset, None)
+    # Validation training selects the best epoch via the model's early-stopping
+    # logic. The final test retrain has no validation set and uses the selected
+    # epoch count applied by main().
+    fit_eval_dataset = None if test_mode else eval_dataset
+    model.fit(train_dataset, fit_eval_dataset)
     
     if verbose:
         logger.info(f"Training completed.\n")

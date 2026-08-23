@@ -1,0 +1,36 @@
+dataset:
+  _target_: src.datasets.RecSysDataset
+  name: Amazon2014-Beauty
+  url: https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Beauty
+model:
+  _target_: src.models.TiSASRec
+  name: tisasrec_mti_64
+  seed: 42
+  device: cuda
+  lr: 0.007155250682439438
+  n_epochs: 1000
+  hidden_size: 64
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.5
+  seq_len: 200
+  batch_size: 256
+  filter_seen: true
+  max_patience: 10
+  max_time_interval: 64
+  relation_chunk_size: 0
+metrics:
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10
+seed: 42
+max_top_n: 100

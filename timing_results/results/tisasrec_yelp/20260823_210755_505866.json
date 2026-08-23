@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "run_id": "20260823_210755_505866",
+  "created_at": "2026-08-23T21:07:55.505866+03:00",
+  "config_name": "tisasrec_yelp",
+  "config_hash": "0bf4fec37ed55c6d69631f5c723e84901d856625325b38f9e8086f4323136131",
+  "hydra_overrides": [],
+  "model": "tisasrec_yelp",
+  "dataset": "yelp2018_dhg",
+  "protocol": {
+    "selection_fit": "train",
+    "timed_fit": "train+val",
+    "training_timing_boundary": "model.fit(train_val_dataset, None)",
+    "inference": "mean of 10 test holdouts",
+    "inference_timing_boundary": "one model.predict(test_dataset) call",
+    "dataset_loading_and_metric_computation_timed": false,
+    "eigendecomposition_timed_separately": false
+  },
+  "environment": {
+    "python": "3.13.5 (main, Jun 25 2025, 18:55:22) [GCC 14.2.0]",
+    "platform": "Linux-6.12.74+deb13+1-amd64-x86_64-with-glibc2.41",
+    "torch": "2.6.0+cu124",
+    "numpy": "2.2.6",
+    "scipy": "1.16.3",
+    "cuda_available": true,
+    "cuda_version": "12.4",
+    "gpu_names": [
+      "NVIDIA A100-PCIE-40GB"
+    ]
+  },
+  "preprocessing": [],
+  "preprocessing_totals": {
+    "graph_build_seconds": 0.0,
+    "eigendecomposition_seconds": 0.0,
+    "postprocess_and_save_seconds": 0.0,
+    "total_preprocessing_seconds": 0.0
+  },
+  "timing": {
+    "seed": 42,
+    "selected_model_params": {
+      "n_epochs": 21
+    },
+    "final_epochs": 21,
+    "train_total_seconds": 610.2856569169089,
+    "train_seconds_per_epoch": 29.061221757948044,
+    "inference_seconds_per_holdout": [
+      3.479498378932476,
+      3.5002155592665076,
+      3.6688082106411457,
+      3.5350148444995284,
+      3.420795490965247,
+      3.549282011575997,
+      3.5236315801739693,
+      3.5774670662358403,
+      3.527453971095383,
+      3.4550317181274295
+    ],
+    "inference_mean_seconds": 3.5237198831513523,
+    "inference_std_seconds": 0.06876192537609103,
+    "validation_metrics": {
+      "ndcg@100": 0.06116260293092968,
+      "ndcg@10": 0.028713674617432544,
+      "recall@100": 0.22752808988764045,
+      "recall@10": 0.055828651685393256,
+      "coverage@100": 0.4191547518923465,
+      "coverage@10": 0.11130677039529016
+    },
+    "test_metrics": {
+      "ndcg@100": 0.05522900954790868,
+      "ndcg@100_std": 0.0013497372337595152,
+      "ndcg@10": 0.022125822137654995,
+      "ndcg@10_std": 0.0012845293930421105,
+      "recall@100": 0.2194826660497895,
+      "recall@100_std": 0.0035447532431385586,
+      "recall@10": 0.04515481833810333,
+      "recall@10_std": 0.0021124957954211155,
+      "coverage@100": 0.5625052565180825,
+      "coverage@100_std": 0.003085038276853679,
+      "coverage@10": 0.18099243061396134,
+      "coverage@10_std": 0.0016678898650661004
+    },
+    "runtime_config": {
+      "dataset": {
+        "_target_": "src.datasets.RecSysDataset",
+        "name": "yelp2018_dhg",
+        "url": ""
+      },
+      "model": {
+        "_target_": "src.models.TiSASRec",
+        "name": "tisasrec_yelp",
+        "seed": 42,
+        "device": "cuda",
+        "lr": 0.002654457743148157,
+        "n_epochs": 21,
+        "hidden_size": 64,
+        "num_blocks": 1,
+        "num_heads": 4,
+        "dropout": 0.5,
+        "seq_len": 200,
+        "batch_size": 512,
+        "filter_seen": true,
+        "max_patience": 10,
+        "max_time_interval": 256,
+        "relation_chunk_size": 0
+      },
+      "metrics": [
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 10
+        }
+      ],
+      "seed": 42,
+      "max_top_n": 100
+    }
+  },
+  "source_config": {
+    "dataset": {
+      "_target_": "src.datasets.RecSysDataset",
+      "name": "yelp2018_dhg",
+      "url": ""
+    },
+    "model": {
+      "_target_": "src.models.TiSASRec",
+      "name": "tisasrec_yelp",
+      "seed": 42,
+      "device": "cuda",
+      "lr": 0.002654457743148157,
+      "n_epochs": 1000,
+      "hidden_size": 64,
+      "num_blocks": 1,
+      "num_heads": 4,
+      "dropout": 0.5,
+      "seq_len": 200,
+      "batch_size": 512,
+      "filter_seen": true,
+      "max_patience": 10,
+      "max_time_interval": 256,
+      "relation_chunk_size": 0
+    },
+    "metrics": [
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 10
+      }
+    ],
+    "seed": 42,
+    "max_top_n": 100
+  }
+}

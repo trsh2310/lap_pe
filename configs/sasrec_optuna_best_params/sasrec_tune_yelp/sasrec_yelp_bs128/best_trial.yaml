@@ -1,0 +1,61 @@
+number: 76
+value: 0.02912458466953679
+params:
+  lr: 0.005291923344125166
+  hidden_size: 64
+  num_heads: 1
+  dropout: 0.5
+  batch_size: 128
+  num_blocks: 1
+user_attrs:
+  config_hash: 8599bdf82d0e64f2292b3502541d7bcbea0635b8920d138388675e530608b7da
+  best_metrics_preview:
+  - val/ndcg@100
+  - val/ndcg@10
+  - val/recall@100
+  - val/recall@10
+  - val/coverage@100
+  - val/coverage@10
+  - additional_cfg_params
+  val/recall@100: 0.22191011235955055
+  val/coverage@100: 0.39781328847771236
+  val/ndcg@10: 0.02912458466953679
+  val/recall@10: 0.05688202247191011
+  val/coverage@10: 0.0989802354920101
+  val/ndcg@100: 0.060170332638514235
+  additional_cfg_params:
+    n_epochs: 32
+  cached_metrics:
+    val/ndcg@100: 0.060170332638514235
+    val/ndcg@10: 0.02912458466953679
+    val/recall@100: 0.22191011235955055
+    val/recall@10: 0.05688202247191011
+    val/coverage@100: 0.39781328847771236
+    val/coverage@10: 0.0989802354920101
+    additional_cfg_params:
+      n_epochs: 32
+test_metrics:
+  test/ndcg@100: 0.051504671300619566
+  test/ndcg@100_std: 0.0017398215280747863
+  test/ndcg@100_ci_low: 0.050260077955324084
+  test/ndcg@100_ci_high: 0.05274926464591505
+  test/ndcg@10: 0.01967351137249035
+  test/ndcg@10_std: 0.0014021115078076175
+  test/ndcg@10_ci_low: 0.018670501222414447
+  test/ndcg@10_ci_high: 0.02067652152256625
+  test/recall@100: 0.2086377103826687
+  test/recall@100_std: 0.004796234490466298
+  test/recall@100_ci_low: 0.20520669091717417
+  test/recall@100_ci_high: 0.21206872984816325
+  test/recall@10: 0.04108621895926613
+  test/recall@10_std: 0.00267162911973109
+  test/recall@10_ci_low: 0.039175050618226945
+  test/recall@10_ci_high: 0.04299738730030532
+  test/coverage@100: 0.6369033851976451
+  test/coverage@100_std: 0.004004231214511843
+  test/coverage@100_ci_low: 0.63403893074517
+  test/coverage@100_ci_high: 0.6397678396501202
+  test/coverage@10: 0.2186737804878049
+  test/coverage@10_std: 0.0019344434897525472
+  test/coverage@10_ci_low: 0.21728996297816622
+  test/coverage@10_ci_high: 0.22005759799744357

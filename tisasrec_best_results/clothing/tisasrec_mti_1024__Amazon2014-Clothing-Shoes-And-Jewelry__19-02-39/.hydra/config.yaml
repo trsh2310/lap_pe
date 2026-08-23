@@ -1,0 +1,36 @@
+dataset:
+  _target_: src.datasets.RecSysDataset
+  name: Amazon2014-Clothing-Shoes-And-Jewelry
+  url: https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Clothing-Shoes-And-Jewelry
+model:
+  _target_: src.models.TiSASRec
+  name: tisasrec_mti_1024
+  seed: 42
+  device: cuda
+  lr: 0.00021124444422497844
+  n_epochs: 1000
+  hidden_size: 512
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.30000000000000004
+  seq_len: 200
+  batch_size: 64
+  filter_seen: true
+  max_patience: 10
+  max_time_interval: 1024
+  relation_chunk_size: 0
+metrics:
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10
+seed: 42
+max_top_n: 100

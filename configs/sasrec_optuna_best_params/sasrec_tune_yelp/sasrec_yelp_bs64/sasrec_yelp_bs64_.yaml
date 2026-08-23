@@ -1,0 +1,67 @@
+dataset:
+  _target_: src.datasets.RecSysDataset
+  name: yelp2018_dhg
+  url: ''
+model:
+  _target_: src.models.SASRecModel
+  name: sasrec
+  seed: 42
+  device: cuda
+  lr: 0.0006252480990097993
+  n_epochs: 32
+  hidden_size: 64
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.5
+  seq_len: 200
+  batch_size: 64
+  filter_seen: true
+  max_patience: 10
+metrics:
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10
+seed: 42
+max_top_n: 100
+optuna_params:
+- name: lr
+  type: float
+  low: 1.0e-05
+  high: 0.01
+- name: hidden_size
+  type: categorical
+  choices:
+  - 64
+  - 128
+  - 256
+  - 512
+- name: num_heads
+  type: categorical
+  choices:
+  - 1
+  - 2
+  - 4
+- name: dropout
+  type: float
+  log: false
+  low: 0.0
+  high: 0.5
+  step: 0.1
+- name: batch_size
+  type: categorical
+  choices:
+  - 64
+- name: num_blocks
+  type: int
+  low: 1
+  high: 4
+  step: 1

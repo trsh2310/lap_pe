@@ -19,9 +19,9 @@ def human_bytes(n_bytes: float) -> str:
         value /= 1024
 
 
-def resolve_k(k_arg: str, n_items: int, n_components: int) -> int:
+def resolve_k(k_arg: str, n_items: int) -> int:
     if k_arg == "full":
-        return n_items - n_components
+        return n_items - 1
     if k_arg == "n_items":
         return n_items
     if k_arg == "prev_power2":
@@ -37,6 +37,7 @@ def resolve_k(k_arg: str, n_items: int, n_components: int) -> int:
 
 def build_normalized_laplacian(dataset):
     r = dataset.get_coo_array().tocsr().astype(np.float32)
+    r.data.fill(1.0)
     a = (r.T @ r).tocsr()
     a.setdiag(0)
     a.eliminate_zeros()
@@ -51,9 +52,9 @@ def build_normalized_laplacian(dataset):
     return laplacian, n_components
 
 
-def output_path(output_dir: Path, dataset_name: str, split: str, requested_k: int, computed_k: int) -> Path:
+def output_path(output_dir: Path, dataset_name: str, split: str, requested_k: int) -> Path:
     safe_dataset = dataset_name.replace("/", "_")
-    return output_dir / safe_dataset / f"{split}_lap_eigvecs_requested{requested_k}_computed{computed_k}.npz"
+    return output_dir / safe_dataset / f"{split}_lap_eigvecs_k{requested_k}.npy"
 
 
 def main():
@@ -73,7 +74,6 @@ def main():
     parser.add_argument("--dtype", default="float32", choices=["float32", "float64"])
     parser.add_argument("--tol", type=float, default=0.0)
     parser.add_argument("--maxiter", type=int, default=None)
-    parser.add_argument("--compressed", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -88,14 +88,17 @@ def main():
     )
 
     laplacian, n_components = build_normalized_laplacian(dataset)
-    requested_k = resolve_k(args.k, dataset.n_items, n_components)
+    requested_k = resolve_k(args.k, dataset.n_items)
     if requested_k <= 0:
         raise ValueError(f"Resolved k must be positive, got {requested_k}.")
+    if requested_k >= dataset.n_items:
+        raise ValueError(
+            f"eigsh requires k < n_items: k={requested_k}, n_items={dataset.n_items}."
+        )
 
-    eigsh_k = min(requested_k + n_components, dataset.n_items - 1)
-    computed_k = max(0, eigsh_k - n_components)
+    eigsh_k = requested_k
     dtype = np.dtype(args.dtype)
-    estimated_vec_bytes = dataset.n_items * max(computed_k, requested_k) * dtype.itemsize
+    estimated_vec_bytes = dataset.n_items * requested_k * dtype.itemsize
 
     print(json.dumps({
         "dataset": dataset.name,
@@ -106,17 +109,11 @@ def main():
         "n_components": int(n_components),
         "requested_k": int(requested_k),
         "eigsh_k": int(eigsh_k),
-        "computed_nontrivial_k": int(computed_k),
+        "eigenvector_basis": "smallest_from_index_0",
         "estimated_eigvec_storage": human_bytes(estimated_vec_bytes),
     }, indent=2))
 
-    if requested_k + n_components >= dataset.n_items:
-        print(
-            "Warning: eigsh requires k < n_items. This will compute at most "
-            f"{computed_k} non-trivial vectors, then downstream code can zero-pad to requested_k."
-        )
-
-    out_path = output_path(Path(args.output_dir), dataset.name, args.split, requested_k, computed_k)
+    out_path = output_path(Path(args.output_dir), dataset.name, args.split, requested_k)
     if args.dry_run:
         print(f"Dry run only. Output would be: {out_path}")
         return
@@ -129,30 +126,10 @@ def main():
     eigvals = eigvals[order]
     eigvecs = eigvecs[:, order]
 
-    pos_enc = eigvecs[:, n_components:n_components + computed_k].astype(dtype, copy=False)
-    nontrivial_eigvals = eigvals[n_components:n_components + computed_k].astype(dtype, copy=False)
-
-    metadata = {
-        "dataset": dataset.name,
-        "split": args.split,
-        "merge_train_val": args.merge_train_val,
-        "n_users": dataset.n_users,
-        "n_items": dataset.n_items,
-        "n_components": int(n_components),
-        "requested_k": int(requested_k),
-        "eigsh_k": int(eigsh_k),
-        "computed_nontrivial_k": int(computed_k),
-        "dtype": str(dtype),
-    }
+    pos_enc = eigvecs[:, :requested_k].astype(dtype, copy=False)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    save = np.savez_compressed if args.compressed else np.savez
-    save(
-        out_path,
-        eigvecs=pos_enc,
-        eigvals=nontrivial_eigvals,
-        metadata=np.array(json.dumps(metadata, sort_keys=True)),
-    )
+    np.save(out_path, pos_enc)
     print(f"Saved {out_path}")
 
 

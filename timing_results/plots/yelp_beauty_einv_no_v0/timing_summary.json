@@ -1,0 +1,90 @@
+[
+  {
+    "model": "sasrec",
+    "dataset": "Amazon2014-Beauty",
+    "config_name": "sasrec_beauty",
+    "config_hash": "1181e22fff7f7ac42c204e7e43babbc9398192f9ff7e50c904866b6b0d2f432b",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 1.0898732404623712,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.9910382918082178,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "sasrec",
+    "dataset": "yelp2018_dhg",
+    "config_name": "sasrec_yelp",
+    "config_hash": "e9bea8f4fbab22ae32a8df5146f2fbd3042848f2ea66cd4d74d9727591236627",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 3.6039630649238825,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.8177091759629548,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "sasrec_einv",
+    "dataset": "Amazon2014-Beauty",
+    "config_name": "sasrec_einv_beauty",
+    "config_hash": "1276ee215fa3c83a53b4f87ff4f4fb7801c19dcb627dd61e9b14aaf9b9fbf29e",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 1.2161388598820742,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.9767278706654906,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "sasrec_einv",
+    "dataset": "yelp2018_dhg",
+    "config_name": "sasrec_einv_yelp",
+    "config_hash": "6fab55e32b6431c53473238e1420d1b8be45bd4920c14883361384a8b31fac3a",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 3.61973718306981,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.8073165750131011,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "sasrec_rope",
+    "dataset": "Amazon2014-Beauty",
+    "config_name": "sasrec_rope_beauty",
+    "config_hash": "f64772e5b929e037bf9bd45d05ba6d51d1309518ad20992be98477edd71698b3",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 1.2663386455323133,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.9743312478996813,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "sasrec_rope",
+    "dataset": "yelp2018_dhg",
+    "config_name": "sasrec_rope_yelp",
+    "config_hash": "54f3ecfb6d3cb260ee49fd27f562657e047e8ca78e0467fe24ecad948e98b863",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 3.7363693504594266,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 0.8985740285366773,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "tisasrec",
+    "dataset": "Amazon2014-Beauty",
+    "config_name": "tisasrec_beauty",
+    "config_hash": "31a3b389691d7c400b0b5a6b34799e7dc92f91f49df6b31a53e4d7ca36ce702e",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 29.2998500286561,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 4.035934136435389,
+    "inference_seconds_std": 0.0
+  },
+  {
+    "model": "tisasrec",
+    "dataset": "yelp2018_dhg",
+    "config_name": "tisasrec_yelp",
+    "config_hash": "0bf4fec37ed55c6d69631f5c723e84901d856625325b38f9e8086f4323136131",
+    "n_runs": 1,
+    "train_seconds_per_epoch_mean": 29.061221757948044,
+    "train_seconds_per_epoch_std": 0.0,
+    "inference_seconds_mean": 3.5237198831513523,
+    "inference_seconds_std": 0.0
+  }
+]

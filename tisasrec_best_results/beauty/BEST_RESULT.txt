@@ -1,0 +1,4 @@
+Best by validation NDCG@10
+max_time_interval: 512
+val/ndcg@10: 0.01715065849216824
+directory: tisasrec_mti_512__Amazon2014-Beauty__16-47-45

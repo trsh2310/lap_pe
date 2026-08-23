@@ -37,7 +37,49 @@ def build_laplacian_positional_encoding(
     n_items,
     chosen_idx=None,
     precomputed_eigvecs=None,
+    eigvec_path=None,
 ):
+    k = int(k)
+    if k <= 0:
+        raise ValueError(f"k must be positive, got {k}.")
+
+    if eigvec_path is not None:
+        loaded = np.load(str(eigvec_path), allow_pickle=True)
+        try:
+            if isinstance(loaded, np.lib.npyio.NpzFile):
+                if "eigvecs" in loaded:
+                    eigvecs = loaded["eigvecs"]
+                elif "pos_enc" in loaded:
+                    eigvecs = loaded["pos_enc"]
+                else:
+                    raise KeyError(
+                        f"{eigvec_path} must contain 'eigvecs' or 'pos_enc'."
+                    )
+            else:
+                eigvecs = loaded
+
+            if eigvecs.ndim != 2:
+                raise ValueError(
+                    f"LPE cache must be two-dimensional, got {eigvecs.shape}."
+                )
+            if eigvecs.shape[0] != n_items:
+                raise ValueError(
+                    "LPE cache row count mismatch: "
+                    f"got {eigvecs.shape[0]}, expected {n_items}."
+                )
+            if chosen_idx is None:
+                chosen_idx = np.arange(k)
+            if len(chosen_idx) != k or max(chosen_idx, default=-1) >= eigvecs.shape[1]:
+                raise ValueError(
+                    f"LPE cache has {eigvecs.shape[1]} columns, but indices "
+                    f"{list(chosen_idx)} are required."
+                )
+            pos_enc = np.asarray(eigvecs[:, chosen_idx], dtype=np.float32)
+        finally:
+            if isinstance(loaded, np.lib.npyio.NpzFile):
+                loaded.close()
+        return torch.from_numpy(pos_enc), list(chosen_idx)
+
     if precomputed_eigvecs is not None and chosen_idx is not None:
         pos_enc = precomputed_eigvecs[:, chosen_idx]
         return torch.FloatTensor(pos_enc), list(chosen_idx)
@@ -54,25 +96,21 @@ def build_laplacian_positional_encoding(
     A = (R.T @ R).tocsr()
     A.setdiag(0)
     A.eliminate_zeros()
-    n_components, _ = connected_components(csgraph=A, directed=False)
-    print(f"Connected components: {n_components}")
     deg = np.array(A.sum(axis=1)).flatten()
     with np.errstate(divide='ignore', invalid='ignore'):
         deg_inv_sqrt = np.where(deg > 0, 1.0 / np.sqrt(deg), 0.0)
     D_inv_sqrt = diags(deg_inv_sqrt)
     L = eye(n_items, format='csr') - D_inv_sqrt @ A @ D_inv_sqrt
-    k_pool = min(k * 5, n_items - 1)
+    k_pool = min(k, n_items - 1)
     eigvals, eigvecs = eigsh(L, k=k_pool, which='SM')
     idx = np.argsort(eigvals)
     eigvecs = eigvecs[:, idx]
-    eigvecs = eigvecs[:, n_components:]
     if chosen_idx is None:
         chosen_idx = np.arange(0, k)
     pos_enc = eigvecs[:, chosen_idx]
     return torch.FloatTensor(pos_enc), list(chosen_idx)
 
 def collate_fn_sasrec(x, maxlen, pad_token, is_train):
-
     seqs_batch = []
     pos_batch = []
     user_ids = []
@@ -80,7 +118,6 @@ def collate_fn_sasrec(x, maxlen, pad_token, is_train):
 
     for user in x:
         seq, pos, neg = pad_seqs(user["history"].tolist(), maxlen, pad_token)
-
         seqs_batch.append(seq)
         pos_batch.append(pos)
         user_ids.append(user["user_id"])
@@ -100,9 +137,7 @@ def collate_fn_sasrec(x, maxlen, pad_token, is_train):
 class PointWiseFeedForward(torch.nn.Module):
 
     def __init__(self, hidden_units, dropout_rate):
-
         super(PointWiseFeedForward, self).__init__()
-
         self.ff = nn.Sequential(
             torch.nn.Conv1d(hidden_units, hidden_units, kernel_size=1),
             torch.nn.Dropout(p=dropout_rate),
@@ -173,15 +208,9 @@ class SASRecBackBone(nn.Module):
     def log2feats(self, log_seqs):
         device = log_seqs.device
         seqs = self.item_emb(log_seqs)
-        #seqs *= self.item_emb.embedding_dim ** 0.5
-        positions = np.tile(np.arange(log_seqs.shape[1]), [log_seqs.shape[0], 1])
-        #seqs += self.pos_emb(torch.LongTensor(positions).to(device))
-        pos_ids = log_seqs
-        lap_pos = self.lap_pos_emb(pos_ids)
+        lap_pos = self.lap_pos_emb(log_seqs)
         if torch.rand(1).item() < 0.001:
-            print("lpe_weight:", self.lpe_weight.item())
-            print("item mean norm:", seqs.norm(dim=-1).mean().item()) 
-            print("lap mean norm:", lap_pos.norm(dim=-1).mean().item())
+            pass
         seqs = seqs + self.lpe_weight * lap_pos
         
         seqs = self.emb_dropout(seqs)
@@ -256,6 +285,7 @@ class SASRecEinv(BaseModel):
         filter_seen: bool = True,
         k = None,
         lpe_seed = None,
+        lap_eigvec_path = None,
     ):
         BaseModel.__init__(self, name)
 
@@ -287,6 +317,7 @@ class SASRecEinv(BaseModel):
         self.chosen_eigvec_indices = None
         self.precomputed_eigvecs = None
         self.precomputed_chosen_idx = None
+        self.lap_eigvec_path = lap_eigvec_path
         
     
     def _post_init(self, train_dataset, val_dataset):
@@ -312,9 +343,13 @@ class SASRecEinv(BaseModel):
 
         self.opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999))
         lap_pos, chosen_indices = build_laplacian_positional_encoding(
-    train_dataset, self.k, self.n_items,
-    chosen_idx=self.precomputed_chosen_idx,
-    precomputed_eigvecs=self.precomputed_eigvecs,)
+            train_dataset,
+            self.k,
+            self.n_items,
+            chosen_idx=self.precomputed_chosen_idx,
+            precomputed_eigvecs=self.precomputed_eigvecs,
+            eigvec_path=self.lap_eigvec_path,
+        )
         self.chosen_eigvec_indices = chosen_indices
         
         if self.k != self.hidden_size:
@@ -399,9 +434,8 @@ class SASRecEinv(BaseModel):
                 index += 1
 
                 if (index + 1) % self.log_step == 0:
-                    print(f"Mean train loss: {sum(train_loss[-self.log_step:]) / self.log_step}")    
-            
-            
+                    print(f"Mean train loss: {sum(train_loss[-self.log_step:]) / self.log_step}")
+
             print(f"Mean train loss: {sum(train_loss) / len(train_loss)}")
 
             if (i + 1) % self.patience_per_epoch == 0 and val_dataset is not None:

@@ -1,0 +1,216 @@
+[2026-08-23 17:31:36,230][__main__][INFO] - Training config:
+dataset:
+  _target_: src.datasets.RecSysDataset
+  name: Amazon2014-Beauty
+  url: https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Beauty
+model:
+  _target_: src.models.TiSASRec
+  name: tisasrec_mti_1024
+  seed: 42
+  device: cuda
+  lr: 0.007155250682439438
+  n_epochs: 1000
+  hidden_size: 64
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.5
+  seq_len: 200
+  batch_size: 256
+  filter_seen: true
+  max_patience: 10
+  max_time_interval: 1024
+  relation_chunk_size: 0
+metrics:
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10
+seed: 42
+max_top_n: 100
+
+
+[2026-08-23 17:31:36,231][__main__][INFO] - Model init: tisasrec_mti_1024
+
+[2026-08-23 17:31:37,216][__main__][INFO] - Start training...
+
+[2026-08-23 17:48:41,387][__main__][INFO] - Training completed.
+
+[2026-08-23 17:48:50,828][__main__][INFO] - Final metrics: {
+  "val/ndcg@100": 0.03404348393083135,
+  "val/ndcg@10": 0.01582892090709624,
+  "val/recall@100": 0.12822402358142962,
+  "val/recall@10": 0.032056005895357405,
+  "val/coverage@100": 0.8567886951491612,
+  "val/coverage@10": 0.45839186844062474,
+  "additional_cfg_params": {
+    "n_epochs": 21
+  }
+}
+
+[2026-08-23 17:48:50,869][__main__][INFO] - Applied validation-selected model params for test retrain:
+n_epochs: 21
+
+
+[2026-08-23 17:48:50,876][__main__][INFO] - Training config:
+dataset:
+  _target_: src.datasets.RecSysDataset
+  name: Amazon2014-Beauty
+  url: https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Beauty
+model:
+  _target_: src.models.TiSASRec
+  name: tisasrec_mti_1024
+  seed: 42
+  device: cuda
+  lr: 0.007155250682439438
+  n_epochs: 21
+  hidden_size: 64
+  num_blocks: 2
+  num_heads: 1
+  dropout: 0.5
+  seq_len: 200
+  batch_size: 256
+  filter_seen: true
+  max_patience: 10
+  max_time_interval: 1024
+  relation_chunk_size: 0
+metrics:
+- _target_: src.metrics.NDCGMetric
+  k: 100
+- _target_: src.metrics.NDCGMetric
+  k: 10
+- _target_: src.metrics.RecallMetric
+  k: 100
+- _target_: src.metrics.RecallMetric
+  k: 10
+- _target_: src.metrics.CoverageMetric
+  k: 100
+- _target_: src.metrics.CoverageMetric
+  k: 10
+seed: 42
+max_top_n: 100
+
+
+[2026-08-23 17:48:50,877][__main__][INFO] - Model init: tisasrec_mti_1024
+
+[2026-08-23 17:48:55,894][__main__][INFO] - Start training...
+
+[2026-08-23 18:02:20,538][__main__][INFO] - Training completed.
+
+[2026-08-23 18:05:06,239][__main__][INFO] - Holdout metrics: {
+  "holdout_0": {
+    "ndcg@100": 0.041361302662828815,
+    "ndcg@10": 0.02011207644714828,
+    "recall@100": 0.14857881136950904,
+    "recall@10": 0.037350246652572236,
+    "coverage@100": 0.9092636972151061,
+    "coverage@10": 0.5630939591769275
+  },
+  "holdout_1": {
+    "ndcg@100": 0.039820854244115654,
+    "ndcg@10": 0.01861756113531104,
+    "recall@100": 0.14756211908110642,
+    "recall@10": 0.03621659634317862,
+    "coverage@100": 0.9101727129989257,
+    "coverage@10": 0.5619370299975208
+  },
+  "holdout_2": {
+    "ndcg@100": 0.03865776758133952,
+    "ndcg@10": 0.017281317752134786,
+    "recall@100": 0.14531323598681112,
+    "recall@10": 0.03367875647668394,
+    "coverage@100": 0.9092636972151061,
+    "coverage@10": 0.5615238410048756
+  },
+  "holdout_3": {
+    "ndcg@100": 0.039085877741154476,
+    "ndcg@10": 0.017816995883891674,
+    "recall@100": 0.14629564400610542,
+    "recall@10": 0.034636609134671835,
+    "coverage@100": 0.9083546814312867,
+    "coverage@10": 0.562267581191637
+  },
+  "holdout_4": {
+    "ndcg@100": 0.04005080453875174,
+    "ndcg@10": 0.017858409508487216,
+    "recall@100": 0.1504528878955417,
+    "recall@10": 0.034348900129396544,
+    "coverage@100": 0.910503264193042,
+    "coverage@10": 0.5612759276092885
+  },
+  "holdout_5": {
+    "ndcg@100": 0.038104969448080346,
+    "ndcg@10": 0.01690567273399929,
+    "recall@100": 0.14497354497354498,
+    "recall@10": 0.03374485596707819,
+    "coverage@100": 0.9091810594165771,
+    "coverage@10": 0.5608627386166433
+  },
+  "holdout_6": {
+    "ndcg@100": 0.038750209260726025,
+    "ndcg@10": 0.01790781612581579,
+    "recall@100": 0.1442646023926812,
+    "recall@10": 0.03518648838845883,
+    "coverage@100": 0.9073630278489381,
+    "coverage@10": 0.5630113213783985
+  },
+  "holdout_7": {
+    "ndcg@100": 0.03878802258605121,
+    "ndcg@10": 0.017319023744360208,
+    "recall@100": 0.1464189109725979,
+    "recall@10": 0.033988004233799836,
+    "coverage@100": 0.9101727129989257,
+    "coverage@10": 0.5616891166019338
+  },
+  "holdout_8": {
+    "ndcg@100": 0.03949160296932161,
+    "ndcg@10": 0.017272985428485793,
+    "recall@100": 0.14861520329994107,
+    "recall@10": 0.032881555686505595,
+    "coverage@100": 0.9093463350136353,
+    "coverage@10": 0.5632592347739857
+  },
+  "holdout_9": {
+    "ndcg@100": 0.039829408191115315,
+    "ndcg@10": 0.018076270262942777,
+    "recall@100": 0.148013167176111,
+    "recall@10": 0.034446273218904304,
+    "coverage@100": 0.9086025948268738,
+    "coverage@10": 0.5588794314519461
+  }
+}
+
+[2026-08-23 18:05:06,240][__main__][INFO] - Final metrics: {
+  "test/ndcg@100": 0.03939408192234847,
+  "test/ndcg@100_std": 0.0009287527770002914,
+  "test/ndcg@100_ci_low": 0.038729692209365466,
+  "test/ndcg@100_ci_high": 0.04005847163533148,
+  "test/ndcg@10": 0.017916812902257686,
+  "test/ndcg@10_std": 0.0009157411280277623,
+  "test/ndcg@10_ci_low": 0.017261731162225475,
+  "test/ndcg@10_ci_high": 0.018571894642289897,
+  "test/recall@100": 0.14704881271539497,
+  "test/recall@100_std": 0.0019324853123064624,
+  "test/recall@100_ci_low": 0.1456663960015155,
+  "test/recall@100_ci_high": 0.14843122942927442,
+  "test/recall@10": 0.034647828623124995,
+  "test/recall@10_std": 0.0013120766900166854,
+  "test/recall@10_ci_low": 0.03370922550173524,
+  "test/recall@10_ci_high": 0.03558643174451475,
+  "test/coverage@100": 0.9092223783158417,
+  "test/coverage@100_std": 0.0009464343190705718,
+  "test/coverage@100_ci_low": 0.9085453399896303,
+  "test/coverage@100_ci_high": 0.9098994166420532,
+  "test/coverage@10": 0.5617800181803158,
+  "test/coverage@10_std": 0.0013028090570685188,
+  "test/coverage@10_ci_low": 0.5608480447241576,
+  "test/coverage@10_ci_high": 0.5627119916364739
+}
+

@@ -2,18 +2,11 @@ from .base import BaseMetric, BaseModel
 from .datasets import RecSysDataset
 from .metrics import CoverageMetric, NDCGMetric, RecallMetric, Summarizer
 from .models import (
-    JointSASRecUltraGCN,
-    PopularRandom,
+    SASRecEinv,
     SASRecMLP,
-    SASRecLapAttentionBias,
+    SASRecModel,
     SASRecRoPE,
-    SASRecRoPELapKV,
-    SASRecRoPELapProjection,
-    SASRecRoPELapQK,
-    SASRecRoPELapRaw,
-    SASRecRoPELapV,
     TiSASRec,
-    UltraGCN,
 )
 
 __all__ = [
@@ -24,16 +17,9 @@ __all__ = [
     "NDCGMetric",
     "RecallMetric",
     "Summarizer",
-    "PopularRandom",
-    "UltraGCN",
-    "JointSASRecUltraGCN",
+    "SASRecEinv",
     "SASRecMLP",
-    "SASRecLapAttentionBias",
+    "SASRecModel",
     "SASRecRoPE",
-    "SASRecRoPELapKV",
-    "SASRecRoPELapProjection",
-    "SASRecRoPELapQK",
-    "SASRecRoPELapRaw",
-    "SASRecRoPELapV",
     "TiSASRec",
 ]
