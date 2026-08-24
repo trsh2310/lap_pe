@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "run_id": "20260823_224004_375680",
+  "created_at": "2026-08-23T22:40:04.375680+03:00",
+  "config_name": "sasrec_beauty",
+  "config_hash": "1181e22fff7f7ac42c204e7e43babbc9398192f9ff7e50c904866b6b0d2f432b",
+  "hydra_overrides": [],
+  "model": "sasrec_beauty",
+  "dataset": "Amazon2014-Beauty",
+  "protocol": {
+    "selection_fit": "train",
+    "timed_fit": "train+val",
+    "training_timing_boundary": "model.fit(train_val_dataset, None)",
+    "inference": "mean of 10 test holdouts",
+    "inference_timing_boundary": "one model.predict(test_dataset) call",
+    "dataset_loading_and_metric_computation_timed": false,
+    "eigendecomposition_timed_separately": false
+  },
+  "environment": {
+    "python": "3.13.5 (main, Jun 25 2025, 18:55:22) [GCC 14.2.0]",
+    "platform": "Linux-6.12.74+deb13+1-amd64-x86_64-with-glibc2.41",
+    "torch": "2.6.0+cu124",
+    "numpy": "2.2.6",
+    "scipy": "1.16.3",
+    "cuda_available": true,
+    "cuda_version": "12.4",
+    "gpu_names": [
+      "NVIDIA A100-PCIE-40GB"
+    ]
+  },
+  "preprocessing": [],
+  "preprocessing_totals": {
+    "graph_build_seconds": 0.0,
+    "eigendecomposition_seconds": 0.0,
+    "postprocess_and_save_seconds": 0.0,
+    "total_preprocessing_seconds": 0.0
+  },
+  "timing": {
+    "seed": 42,
+    "selected_model_params": {
+      "n_epochs": 14
+    },
+    "final_epochs": 14,
+    "train_total_seconds": 15.258225366473198,
+    "train_seconds_per_epoch": 1.0898732404623712,
+    "inference_seconds_per_holdout": [
+      0.8378722295165062,
+      0.9308017436414957,
+      0.9963433053344488,
+      0.9944089846685529,
+      0.9908089628443122,
+      0.9953786553815007,
+      1.05085926130414,
+      1.0254537388682365,
+      0.9938370641320944,
+      1.0946189723908901
+    ],
+    "inference_mean_seconds": 0.9910382918082178,
+    "inference_std_seconds": 0.06883671691752237,
+    "validation_metrics": {
+      "ndcg@100": 0.03410288641946515,
+      "ndcg@10": 0.01584030870095152,
+      "recall@100": 0.12896094325718496,
+      "recall@10": 0.032056005895357405,
+      "coverage@100": 0.9085199570283448,
+      "coverage@10": 0.5714403768283612
+    },
+    "test_metrics": {
+      "ndcg@100": 0.038965735523986716,
+      "ndcg@100_std": 0.0007793718270529907,
+      "ndcg@10": 0.017374983363551286,
+      "ndcg@10_std": 0.0010824169175916835,
+      "recall@100": 0.14792958546917206,
+      "recall@100_std": 0.0024589908436640022,
+      "recall@10": 0.03375791549630535,
+      "recall@10_std": 0.0017125712412250096,
+      "coverage@100": 0.9424014544252541,
+      "coverage@100_std": 0.0014460958872166683,
+      "coverage@10": 0.6653169159573589,
+      "coverage@10_std": 0.003112812293533147
+    },
+    "runtime_config": {
+      "dataset": {
+        "_target_": "src.datasets.RecSysDataset",
+        "name": "Amazon2014-Beauty",
+        "url": "https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Beauty"
+      },
+      "metrics": [
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 10
+        }
+      ],
+      "model": {
+        "_target_": "src.models.SASRecModel",
+        "name": "sasrec_beauty",
+        "seed": 42,
+        "device": "cuda",
+        "lr": 0.007155250682439438,
+        "n_epochs": 14,
+        "hidden_size": 64,
+        "num_blocks": 2,
+        "num_heads": 1,
+        "dropout": 0.5,
+        "seq_len": 200,
+        "batch_size": 256,
+        "filter_seen": true,
+        "use_absolute_pe": true,
+        "max_patience": 10
+      },
+      "seed": 42,
+      "max_top_n": 100
+    }
+  },
+  "source_config": {
+    "dataset": {
+      "_target_": "src.datasets.RecSysDataset",
+      "name": "Amazon2014-Beauty",
+      "url": "https://disk.360.yandex.ru/d/cUBZLP_OoLankw?path=/Amazon2014-Beauty"
+    },
+    "metrics": [
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 10
+      }
+    ],
+    "model": {
+      "_target_": "src.models.SASRecModel",
+      "name": "sasrec_beauty",
+      "seed": 42,
+      "device": "cuda",
+      "lr": 0.007155250682439438,
+      "n_epochs": 1000,
+      "hidden_size": 64,
+      "num_blocks": 2,
+      "num_heads": 1,
+      "dropout": 0.5,
+      "seq_len": 200,
+      "batch_size": 256,
+      "filter_seen": true,
+      "use_absolute_pe": true,
+      "max_patience": 10
+    },
+    "seed": 42,
+    "max_top_n": 100
+  }
+}

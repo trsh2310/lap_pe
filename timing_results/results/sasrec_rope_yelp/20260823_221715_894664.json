@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "run_id": "20260823_221715_894664",
+  "created_at": "2026-08-23T22:17:15.894664+03:00",
+  "config_name": "sasrec_rope_yelp",
+  "config_hash": "54f3ecfb6d3cb260ee49fd27f562657e047e8ca78e0467fe24ecad948e98b863",
+  "hydra_overrides": [],
+  "model": "sasrec_rope_yelp",
+  "dataset": "yelp2018_dhg",
+  "protocol": {
+    "selection_fit": "train",
+    "timed_fit": "train+val",
+    "training_timing_boundary": "model.fit(train_val_dataset, None)",
+    "inference": "mean of 10 test holdouts",
+    "inference_timing_boundary": "one model.predict(test_dataset) call",
+    "dataset_loading_and_metric_computation_timed": false,
+    "eigendecomposition_timed_separately": false
+  },
+  "environment": {
+    "python": "3.13.5 (main, Jun 25 2025, 18:55:22) [GCC 14.2.0]",
+    "platform": "Linux-6.12.74+deb13+1-amd64-x86_64-with-glibc2.41",
+    "torch": "2.6.0+cu124",
+    "numpy": "2.2.6",
+    "scipy": "1.16.3",
+    "cuda_available": true,
+    "cuda_version": "12.4",
+    "gpu_names": [
+      "NVIDIA A100-PCIE-40GB"
+    ]
+  },
+  "preprocessing": [],
+  "preprocessing_totals": {
+    "graph_build_seconds": 0.0,
+    "eigendecomposition_seconds": 0.0,
+    "postprocess_and_save_seconds": 0.0,
+    "total_preprocessing_seconds": 0.0
+  },
+  "timing": {
+    "seed": 42,
+    "selected_model_params": {
+      "n_epochs": 18
+    },
+    "final_epochs": 18,
+    "train_total_seconds": 67.25464830826968,
+    "train_seconds_per_epoch": 3.7363693504594266,
+    "inference_seconds_per_holdout": [
+      0.8837171522900462,
+      0.8942919364199042,
+      0.9009112203493714,
+      0.8933028960600495,
+      0.9374896865338087,
+      0.8970899377018213,
+      0.890348793938756,
+      0.8722897563129663,
+      0.9396234983578324,
+      0.8766754074022174
+    ],
+    "inference_mean_seconds": 0.8985740285366773,
+    "inference_std_seconds": 0.022881500003095787,
+    "validation_metrics": {
+      "ndcg@100": 0.05676381763218925,
+      "ndcg@10": 0.02412585638376508,
+      "recall@100": 0.22155898876404495,
+      "recall@10": 0.0488061797752809,
+      "coverage@100": 0.4449642556770395,
+      "coverage@10": 0.11913898233809925
+    },
+    "test_metrics": {
+      "ndcg@100": 0.06078984533802465,
+      "ndcg@100_std": 0.0017158032492729516,
+      "ndcg@10": 0.025616649852895863,
+      "ndcg@10_std": 0.001706108271322469,
+      "recall@100": 0.23561493366163405,
+      "recall@100_std": 0.005107810768686897,
+      "recall@10": 0.05147654247329433,
+      "recall@10_std": 0.0026278302586423084,
+      "coverage@100": 0.6357101555929352,
+      "coverage@100_std": 0.002851341425045701,
+      "coverage@10": 0.21457632464255677,
+      "coverage@10_std": 0.0014337227348245787
+    },
+    "runtime_config": {
+      "dataset": {
+        "_target_": "src.datasets.RecSysDataset",
+        "name": "yelp2018_dhg",
+        "url": ""
+      },
+      "metrics": [
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 10
+        }
+      ],
+      "model": {
+        "_target_": "src.models.SASRecRoPE",
+        "name": "sasrec_rope_yelp",
+        "seed": 42,
+        "device": "cuda",
+        "lr": 0.002654457743148157,
+        "n_epochs": 18,
+        "hidden_size": 64,
+        "num_blocks": 1,
+        "num_heads": 4,
+        "dropout": 0.5,
+        "seq_len": 200,
+        "batch_size": 512,
+        "filter_seen": true,
+        "max_patience": 10,
+        "rope_base": 10000.0
+      },
+      "seed": 42,
+      "max_top_n": 100
+    }
+  },
+  "source_config": {
+    "dataset": {
+      "_target_": "src.datasets.RecSysDataset",
+      "name": "yelp2018_dhg",
+      "url": ""
+    },
+    "metrics": [
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 10
+      }
+    ],
+    "model": {
+      "_target_": "src.models.SASRecRoPE",
+      "name": "sasrec_rope_yelp",
+      "seed": 42,
+      "device": "cuda",
+      "lr": 0.002654457743148157,
+      "n_epochs": 1000,
+      "hidden_size": 64,
+      "num_blocks": 1,
+      "num_heads": 4,
+      "dropout": 0.5,
+      "seq_len": 200,
+      "batch_size": 512,
+      "filter_seen": true,
+      "max_patience": 10,
+      "rope_base": 10000.0
+    },
+    "seed": 42,
+    "max_top_n": 100
+  }
+}

@@ -41,7 +41,7 @@ def main(
         for i, _test in enumerate(tests):
             _test.to_csv(data_path / f"holdout_test_{i}.csv", index=False)
 
-    print("\Holdout complete!")
+    print("Holdout complete!")
     print(
         f"Val: {len(validation)} holdout items, {validation[user_col].nunique()} users"
     )

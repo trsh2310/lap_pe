@@ -1,0 +1,4 @@
+Best by validation NDCG@10
+max_time_interval: 256
+val/ndcg@10: 0.028713674617432544
+directory: tisasrec_mti_256__yelp2018_dhg__15-59-57

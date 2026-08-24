@@ -85,14 +85,16 @@ class SASRecBackBone(nn.Module):
             maxlen,
             num_blocks,
             num_heads,
-            manual_seed=37
+            manual_seed=37,
+            use_absolute_pe=False,
         ):
         super(SASRecBackBone, self).__init__()
         self.item_num = item_num
         self.pad_token = item_num
+        self.use_absolute_pe = use_absolute_pe
 
         self.item_emb = nn.Embedding(self.item_num+1, hidden_units, padding_idx=self.pad_token)
-        #self.pos_emb = nn.Embedding(maxlen, hidden_units)
+        self.pos_emb = nn.Embedding(maxlen, hidden_units) if use_absolute_pe else None
         self.emb_dropout = nn.Dropout(p=dropout_rate)
 
         self.attention_layernorms = nn.ModuleList() # to be Q for self-attention
@@ -129,8 +131,9 @@ class SASRecBackBone(nn.Module):
         device = log_seqs.device
         seqs = self.item_emb(log_seqs)
         seqs *= self.item_emb.embedding_dim ** 0.5
-        #positions = np.tile(np.arange(log_seqs.shape[1]), [log_seqs.shape[0], 1])
-        #seqs += self.pos_emb(torch.LongTensor(positions).to(device))
+        if self.pos_emb is not None:
+            positions = np.tile(np.arange(log_seqs.shape[1]), [log_seqs.shape[0], 1])
+            seqs += self.pos_emb(torch.LongTensor(positions).to(device))
         seqs = self.emb_dropout(seqs)
 
         timeline_mask = log_seqs == self.pad_token
@@ -196,7 +199,8 @@ class SASRecModel(BaseModel):
         patience_per_epoch: int = 1,
         max_patience: int = 50,
         val_top_n: int = 10,
-        filter_seen: bool = True
+        filter_seen: bool = True,
+        use_absolute_pe: bool = False,
     ):
         BaseModel.__init__(self, name)
 
@@ -210,6 +214,7 @@ class SASRecModel(BaseModel):
         self.batch_size = batch_size
         self.num_heads = num_heads
         self.filter_seen = filter_seen
+        self.use_absolute_pe = use_absolute_pe
 
         self.patience_per_epoch = patience_per_epoch
         self.max_patience = max_patience
@@ -233,7 +238,8 @@ class SASRecModel(BaseModel):
             self.seq_len,
             self.num_blocks,
             self.num_heads,
-            manual_seed=37
+            manual_seed=37,
+            use_absolute_pe=self.use_absolute_pe,
         )
 
         self.model.to(self.device)
@@ -241,19 +247,19 @@ class SASRecModel(BaseModel):
         self.opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999))
 
     def _sasrec_forward(self, log_seqs, pos_seqs, return_hidden = False):
-        emb = self.model.log2feats(log_seqs)
-        hd = emb.shape[-1]
-        x = emb.view(-1, hd)
-        y = pos_seqs.view(-1)
-        mask = y != self.model.pad_token
-        x = x[mask]
-        y = y[mask]
-        logits = x @ self.model.item_emb.weight.T
-        logits[:, self.model.pad_token] = -1e9
-        loss = F.cross_entropy(logits, y)
-        if return_hidden:
-            return loss, emb
-        return loss
+            emb = self.model.log2feats(log_seqs)
+            hd = emb.shape[-1]
+            x = emb.view(-1, hd)
+            y = pos_seqs.view(-1)
+            mask = y != self.model.pad_token
+            x = x[mask]
+            y = y[mask]
+            logits = x @ self.model.item_emb.weight.T
+            logits[:, self.model.pad_token] = -1e9
+            loss = F.cross_entropy(logits, y)
+            if return_hidden:
+                return loss, emb
+            return loss
     
     def suggest_additional_params(self):
         return {"n_epochs": self.n_epochs}

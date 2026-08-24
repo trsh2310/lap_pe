@@ -1,0 +1,3 @@
+- model.max_time_interval=64
+- model.name=tisasrec_mti_64
+- dataset=Amazon2014-Clothing-Shoes-And-Jewelry

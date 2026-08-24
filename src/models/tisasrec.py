@@ -11,22 +11,40 @@ from src.metrics import NDCGMetric
 from src.models.sasrec import PointWiseFeedForward, fix_torch_seed
 
 
-def _time_interval_matrix(timestamps, max_time_interval):
+def _minimum_positive_interval(timestamps):
+    timestamps = np.asarray(timestamps, dtype=np.int64)
+    if timestamps.size < 2:
+        return 1
+
+    positive_intervals = np.abs(np.diff(timestamps))
+    positive_intervals = positive_intervals[positive_intervals > 0]
+    return int(positive_intervals.min()) if positive_intervals.size > 0 else 1
+
+
+def _time_interval_matrix(timestamps, max_time_interval, min_interval=1):
     timestamps = np.asarray(timestamps, dtype=np.int64)
     intervals = np.abs(timestamps[:, None] - timestamps[None, :])
-    positive_intervals = intervals[intervals > 0]
-    min_interval = positive_intervals.min() if positive_intervals.size > 0 else 1
     interval_ids = intervals // min_interval
     interval_ids = np.minimum(interval_ids, max_time_interval)
     return interval_ids.astype(np.int64)
 
 
-def pad_seqs_with_timestamps(user_items, user_timestamps, maxlen, pad_token, max_time_interval):
+def pad_seqs_with_timestamps(
+    user_items,
+    user_timestamps,
+    maxlen,
+    pad_token,
+    max_time_interval,
+    is_train,
+):
     user_items = list(user_items)
     user_timestamps = list(user_timestamps)
     if len(user_items) != len(user_timestamps):
         raise ValueError("Item history and timestamp history must have the same length.")
 
+    # TiSASRec uses one personalized time scale per user. It must not be
+    # recalculated independently for the training and inference sequences.
+    min_interval = _minimum_positive_interval(user_timestamps)
     first_timestamp = user_timestamps[0] if user_timestamps else 0
     seq = np.full(maxlen, pad_token, dtype=np.int64)
     pos = np.full(maxlen, pad_token, dtype=np.int64)
@@ -46,32 +64,42 @@ def pad_seqs_with_timestamps(user_items, user_timestamps, maxlen, pad_token, max
         seq_times = np.asarray(user_timestamps[-maxlen - 1:-1], dtype=np.int64)
         inference_times = np.asarray(user_timestamps[-maxlen:], dtype=np.int64)
 
-    time_matrix = _time_interval_matrix(seq_times, max_time_interval)
-    inference_time_matrix = _time_interval_matrix(inference_times, max_time_interval)
-    return seq, pos, time_matrix, inference_time_matrix
+    if is_train:
+        time_matrix = _time_interval_matrix(
+            seq_times,
+            max_time_interval,
+            min_interval=min_interval,
+        )
+        return seq, pos, time_matrix
+
+    inference_time_matrix = _time_interval_matrix(
+        inference_times,
+        max_time_interval,
+        min_interval=min_interval,
+    )
+    return pos, pos, inference_time_matrix
 
 
 def collate_fn_tisasrec(x, maxlen, pad_token, max_time_interval, is_train):
     seqs_batch = []
     pos_batch = []
     time_matrix_batch = []
-    inference_time_matrix_batch = []
     user_ids = []
     seen_history = []
 
     for user in x:
-        seq, pos, time_matrix, inference_time_matrix = pad_seqs_with_timestamps(
+        seq, pos, time_matrix = pad_seqs_with_timestamps(
             user["history"].tolist(),
             user["timestamps"].tolist(),
             maxlen,
             pad_token,
             max_time_interval,
+            is_train,
         )
 
         seqs_batch.append(seq)
         pos_batch.append(pos)
         time_matrix_batch.append(time_matrix)
-        inference_time_matrix_batch.append(inference_time_matrix)
         user_ids.append(user["user_id"])
         if not is_train:
             seen_history.append(user["history"])
@@ -80,7 +108,6 @@ def collate_fn_tisasrec(x, maxlen, pad_token, max_time_interval, is_train):
         "seq": torch.LongTensor(np.asarray(seqs_batch)),
         "pos": torch.LongTensor(np.asarray(pos_batch)),
         "time_matrix": torch.LongTensor(np.asarray(time_matrix_batch)),
-        "inference_time_matrix": torch.LongTensor(np.asarray(inference_time_matrix_batch)),
         "user_id": torch.LongTensor(np.asarray(user_ids)),
         "seen_history": seen_history,
     }
@@ -89,47 +116,39 @@ def collate_fn_tisasrec(x, maxlen, pad_token, max_time_interval, is_train):
 
 
 class TimeIntervalAwareAttention(nn.Module):
-    def __init__(self, hidden_units, num_heads, maxlen, max_time_interval, dropout_rate):
+    def __init__(self, hidden_units, num_heads, dropout_rate, relation_chunk_size=0):
         super().__init__()
         if hidden_units % num_heads != 0:
             raise ValueError("hidden_units must be divisible by num_heads.")
+        if relation_chunk_size < 0:
+            raise ValueError("relation_chunk_size must be non-negative.")
 
         self.hidden_units = hidden_units
         self.num_heads = num_heads
         self.head_dim = hidden_units // num_heads
+        self.relation_chunk_size = relation_chunk_size
 
         self.q_proj = nn.Linear(hidden_units, hidden_units)
         self.k_proj = nn.Linear(hidden_units, hidden_units)
         self.v_proj = nn.Linear(hidden_units, hidden_units)
         self.out_proj = nn.Linear(hidden_units, hidden_units)
 
-        self.pos_key_emb = nn.Embedding(maxlen, hidden_units)
-        self.pos_value_emb = nn.Embedding(maxlen, hidden_units)
-        self.time_key_emb = nn.Embedding(max_time_interval + 1, hidden_units, padding_idx=0)
-        self.time_value_emb = nn.Embedding(max_time_interval + 1, hidden_units, padding_idx=0)
         self.dropout = nn.Dropout(dropout_rate)
-        self.max_relation_elements_per_chunk = 100_000_000
 
     def _split_heads(self, x):
         seq_len, batch_size, _ = x.shape
         x = x.view(seq_len, batch_size, self.num_heads, self.head_dim)
         return x.permute(1, 2, 0, 3)
 
+    def _split_position_heads(self, x):
+        batch_size, seq_len, _ = x.shape
+        x = x.view(batch_size, seq_len, self.num_heads, self.head_dim)
+        return x.permute(0, 2, 1, 3)
+
     def _split_relation_heads(self, x):
         batch_size, seq_len, _, _ = x.shape
         x = x.view(batch_size, seq_len, seq_len, self.num_heads, self.head_dim)
         return x.permute(0, 3, 1, 2, 4)
-
-    def _position_embeddings(self, seq_len, device):
-        positions = torch.arange(seq_len, device=device)
-        pos_k = self.pos_key_emb(positions).view(seq_len, self.num_heads, self.head_dim)
-        pos_v = self.pos_value_emb(positions).view(seq_len, self.num_heads, self.head_dim)
-        return pos_k.permute(1, 0, 2), pos_v.permute(1, 0, 2)
-
-    def _relation_chunk_size(self, batch_size, seq_len):
-        elements_per_user = seq_len * seq_len * self.hidden_units
-        chunk_size = self.max_relation_elements_per_chunk // max(elements_per_user, 1)
-        return max(1, min(batch_size, chunk_size))
 
     def _checkpoint_if_training(self, fn, *args):
         if torch.is_grad_enabled() and any(
@@ -138,18 +157,24 @@ class TimeIntervalAwareAttention(nn.Module):
             return checkpoint(fn, *args, use_reentrant=False)
         return fn(*args)
 
-    def _time_scores(self, q, time_matrix):
-        batch_size, _, seq_len, _ = q.shape
-        chunk_size = self._relation_chunk_size(batch_size, seq_len)
+    def _time_scores_chunked(
+        self,
+        q,
+        time_matrix,
+        time_key_emb,
+        relation_dropout,
+    ):
+        batch_size = q.shape[0]
         score_chunks = []
 
-        for start in range(0, batch_size, chunk_size):
-            end = min(start + chunk_size, batch_size)
+        for start in range(0, batch_size, self.relation_chunk_size):
+            end = min(start + self.relation_chunk_size, batch_size)
             q_chunk = q[start:end]
             time_chunk = time_matrix[start:end]
 
             def compute_scores(q_part, time_part):
-                rel_k = self._split_relation_heads(self.time_key_emb(time_part))
+                rel_k = relation_dropout(time_key_emb(time_part))
+                rel_k = self._split_relation_heads(rel_k)
                 return torch.einsum("bhid,bhijd->bhij", q_part, rel_k)
 
             score_chunks.append(
@@ -158,18 +183,24 @@ class TimeIntervalAwareAttention(nn.Module):
 
         return torch.cat(score_chunks, dim=0)
 
-    def _time_output(self, attn_weights, time_matrix):
-        batch_size, _, seq_len, _ = attn_weights.shape
-        chunk_size = self._relation_chunk_size(batch_size, seq_len)
+    def _time_output_chunked(
+        self,
+        attn_weights,
+        time_matrix,
+        time_value_emb,
+        relation_dropout,
+    ):
+        batch_size = attn_weights.shape[0]
         output_chunks = []
 
-        for start in range(0, batch_size, chunk_size):
-            end = min(start + chunk_size, batch_size)
+        for start in range(0, batch_size, self.relation_chunk_size):
+            end = min(start + self.relation_chunk_size, batch_size)
             attn_chunk = attn_weights[start:end]
             time_chunk = time_matrix[start:end]
 
             def compute_output(attn_part, time_part):
-                rel_v = self._split_relation_heads(self.time_value_emb(time_part))
+                rel_v = relation_dropout(time_value_emb(time_part))
+                rel_v = self._split_relation_heads(rel_v)
                 return torch.einsum("bhij,bhijd->bhid", attn_part, rel_v)
 
             output_chunks.append(
@@ -178,17 +209,42 @@ class TimeIntervalAwareAttention(nn.Module):
 
         return torch.cat(output_chunks, dim=0)
 
-    def forward(self, query, key, value, time_matrix, attn_mask=None, key_padding_mask=None):
+    def forward(
+        self,
+        query,
+        key,
+        value,
+        pos_key,
+        pos_value,
+        time_key=None,
+        time_value=None,
+        time_matrix=None,
+        time_key_emb=None,
+        time_value_emb=None,
+        relation_dropout=None,
+        attn_mask=None,
+        key_padding_mask=None,
+    ):
         seq_len, batch_size, _ = query.shape
         q = self._split_heads(self.q_proj(query))
         k = self._split_heads(self.k_proj(key))
         v = self._split_heads(self.v_proj(value))
 
-        pos_k, pos_v = self._position_embeddings(seq_len, query.device)
+        pos_k = self._split_position_heads(pos_key)
+        pos_v = self._split_position_heads(pos_value)
 
         content_scores = torch.matmul(q, k.transpose(-2, -1))
-        time_scores = self._time_scores(q, time_matrix)
-        position_scores = torch.einsum("bhid,hjd->bhij", q, pos_k)
+        if self.relation_chunk_size > 0:
+            time_scores = self._time_scores_chunked(
+                q,
+                time_matrix,
+                time_key_emb,
+                relation_dropout,
+            )
+        else:
+            rel_k = self._split_relation_heads(time_key)
+            time_scores = torch.einsum("bhid,bhijd->bhij", q, rel_k)
+        position_scores = torch.einsum("bhid,bhjd->bhij", q, pos_k)
         attn_scores = (content_scores + time_scores + position_scores) * (self.head_dim ** -0.5)
 
         if attn_mask is not None:
@@ -201,8 +257,17 @@ class TimeIntervalAwareAttention(nn.Module):
         attn_weights = self.dropout(attn_weights)
 
         content_output = torch.matmul(attn_weights, v)
-        time_output = self._time_output(attn_weights, time_matrix)
-        position_output = torch.einsum("bhij,hjd->bhid", attn_weights, pos_v)
+        if self.relation_chunk_size > 0:
+            time_output = self._time_output_chunked(
+                attn_weights,
+                time_matrix,
+                time_value_emb,
+                relation_dropout,
+            )
+        else:
+            rel_v = self._split_relation_heads(time_value)
+            time_output = torch.einsum("bhij,bhijd->bhid", attn_weights, rel_v)
+        position_output = torch.einsum("bhij,bhjd->bhid", attn_weights, pos_v)
         attn_output = content_output + time_output + position_output
         attn_output = attn_output.permute(2, 0, 1, 3).contiguous()
         attn_output = attn_output.view(seq_len, batch_size, self.hidden_units)
@@ -221,13 +286,24 @@ class TiSASRecBackBone(nn.Module):
         num_blocks,
         num_heads,
         max_time_interval,
+        relation_chunk_size=0,
         manual_seed=37,
     ):
         super(TiSASRecBackBone, self).__init__()
         self.item_num = item_num
         self.pad_token = item_num
+        self.relation_chunk_size = relation_chunk_size
         self.item_emb = nn.Embedding(self.item_num + 1, hidden_units, padding_idx=self.pad_token)
         self.emb_dropout = nn.Dropout(p=dropout_rate)
+        self.relation_dropout = nn.Dropout(p=dropout_rate)
+
+        # As in the original TiSASRec, positional and temporal relation
+        # embeddings are shared by all self-attention blocks.
+        self.pos_key_emb = nn.Embedding(maxlen, hidden_units)
+        self.pos_value_emb = nn.Embedding(maxlen, hidden_units)
+        # Interval id 0 is a real relation (same timestamp / diagonal), not padding.
+        self.time_key_emb = nn.Embedding(max_time_interval + 1, hidden_units)
+        self.time_value_emb = nn.Embedding(max_time_interval + 1, hidden_units)
 
         self.attention_layernorms = nn.ModuleList()
         self.attention_layers = nn.ModuleList()
@@ -241,9 +317,8 @@ class TiSASRecBackBone(nn.Module):
                 TimeIntervalAwareAttention(
                     hidden_units,
                     num_heads,
-                    maxlen,
-                    max_time_interval,
                     dropout_rate,
+                    relation_chunk_size=relation_chunk_size,
                 )
             )
             self.forward_layernorms.append(nn.LayerNorm(hidden_units, eps=1e-8))
@@ -258,9 +333,7 @@ class TiSASRecBackBone(nn.Module):
                 torch.nn.init.xavier_uniform_(param.data)
             except Exception:
                 pass
-        for attention_layer in self.attention_layers:
-            attention_layer.time_key_emb.weight.data[0].zero_()
-            attention_layer.time_value_emb.weight.data[0].zero_()
+        self.item_emb.weight.data[self.pad_token].zero_()
 
     def log2feats(self, log_seqs, time_matrix):
         device = log_seqs.device
@@ -274,6 +347,20 @@ class TiSASRecBackBone(nn.Module):
         seq_len = seqs.shape[1]
         attention_mask = ~torch.tril(torch.full((seq_len, seq_len), True, device=device))
 
+        # These tensors are deliberately created once and reused by every block,
+        # matching the reference TiSASRec implementation.
+        positions = torch.arange(seq_len, device=device)
+        positions = positions.unsqueeze(0).expand(log_seqs.shape[0], -1)
+        pos_key = self.relation_dropout(self.pos_key_emb(positions))
+        pos_value = self.relation_dropout(self.pos_value_emb(positions))
+        use_relation_chunks = self.relation_chunk_size > 0
+        if use_relation_chunks:
+            time_key = None
+            time_value = None
+        else:
+            time_key = self.relation_dropout(self.time_key_emb(time_matrix))
+            time_value = self.relation_dropout(self.time_value_emb(time_matrix))
+
         for i in range(len(self.attention_layers)):
             seqs = torch.transpose(seqs, 0, 1)
             seqs = self.forward_layernorms[i](seqs)
@@ -282,7 +369,14 @@ class TiSASRecBackBone(nn.Module):
                 q,
                 seqs,
                 seqs,
-                time_matrix,
+                pos_key,
+                pos_value,
+                time_key,
+                time_value,
+                time_matrix=time_matrix,
+                time_key_emb=self.time_key_emb,
+                time_value_emb=self.time_value_emb,
+                relation_dropout=self.relation_dropout,
                 attn_mask=attention_mask,
                 key_padding_mask=timeline_mask,
             )
@@ -301,6 +395,7 @@ class TiSASRecBackBone(nn.Module):
         final_feat = log_feats[:, -1, :]
         item_embs = self.item_emb.weight
         logits = item_embs.matmul(final_feat.unsqueeze(-1)).squeeze(-1)
+        logits[:, self.pad_token] = -1e9
         return logits
 
 
@@ -324,6 +419,7 @@ class TiSASRec(BaseModel):
         val_top_n: int = 10,
         filter_seen: bool = True,
         max_time_interval: int = 256,
+        relation_chunk_size: int = 0,
     ):
         BaseModel.__init__(self, name)
         self.hidden_size = hidden_size
@@ -342,6 +438,7 @@ class TiSASRec(BaseModel):
         self.log_step = log_step
         self.val_top_n = val_top_n
         self.max_time_interval = max_time_interval
+        self.relation_chunk_size = relation_chunk_size
 
     def _post_init(self, train_dataset, val_dataset):
         self.n_items = train_dataset.n_items
@@ -353,7 +450,8 @@ class TiSASRec(BaseModel):
             self.num_blocks,
             self.num_heads,
             self.max_time_interval,
-            manual_seed=37,
+            relation_chunk_size=self.relation_chunk_size,
+            manual_seed=self.seed,
         )
         self.model.to(self.device)
         self.opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999))
@@ -466,8 +564,8 @@ class TiSASRec(BaseModel):
 
         for batch in dataloader:
             logits = self.model.score(
-                seq=batch["pos"].to(self.device),
-                time_matrix=batch["inference_time_matrix"].to(self.device),
+                seq=batch["seq"].to(self.device),
+                time_matrix=batch["time_matrix"].to(self.device),
             )
 
             if self.filter_seen:

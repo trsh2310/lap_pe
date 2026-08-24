@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "run_id": "20260824_124133_621884",
+  "created_at": "2026-08-24T12:41:33.621884+03:00",
+  "config_name": "sasrec_einv_yelp",
+  "config_hash": "6fab55e32b6431c53473238e1420d1b8be45bd4920c14883361384a8b31fac3a",
+  "hydra_overrides": [],
+  "model": "sasrec_einv_yelp",
+  "dataset": "yelp2018_dhg",
+  "protocol": {
+    "selection_fit": "train",
+    "timed_fit": "train+val",
+    "training_timing_boundary": "model.fit(train_val_dataset, None)",
+    "inference": "mean of 10 test holdouts",
+    "inference_timing_boundary": "one model.predict(test_dataset) call",
+    "dataset_loading_and_metric_computation_timed": false,
+    "eigendecomposition_timed_separately": true
+  },
+  "environment": {
+    "python": "3.13.5 (main, Jun 25 2025, 18:55:22) [GCC 14.2.0]",
+    "platform": "Linux-6.12.74+deb13+1-amd64-x86_64-with-glibc2.41",
+    "torch": "2.6.0+cu124",
+    "numpy": "2.2.6",
+    "scipy": "1.16.3",
+    "cuda_available": true,
+    "cuda_version": "12.4",
+    "gpu_names": [
+      "NVIDIA A100-PCIE-40GB"
+    ]
+  },
+  "preprocessing": [
+    {
+      "dataset": "yelp2018_dhg",
+      "split": "train",
+      "merge_train_val": false,
+      "n_users": 31668,
+      "n_items": 38048,
+      "n_components": 5,
+      "requested_k": 64,
+      "eigsh_k": 64,
+      "eigenvector_basis": "smallest_from_index_0",
+      "dtype": "float32",
+      "phase": "train",
+      "graph_build_seconds": 65.6980054564774,
+      "eigendecomposition_seconds": 30.15897144097835,
+      "postprocess_and_save_seconds": 0.015050217509269714,
+      "total_preprocessing_seconds": 95.87202711496502,
+      "cache_path": "/home/arkady/trsh/lap_pe/timing_results/artifacts/sasrec_einv_yelp/20260824_124133_621884/train_lap_eigvecs.npy"
+    },
+    {
+      "dataset": "yelp2018_dhg",
+      "split": "train",
+      "merge_train_val": true,
+      "n_users": 31668,
+      "n_items": 38048,
+      "n_components": 2,
+      "requested_k": 64,
+      "eigsh_k": 64,
+      "eigenvector_basis": "smallest_from_index_0",
+      "dtype": "float32",
+      "phase": "train_val",
+      "graph_build_seconds": 66.59166859369725,
+      "eigendecomposition_seconds": 28.29147460963577,
+      "postprocess_and_save_seconds": 0.018972239457070827,
+      "total_preprocessing_seconds": 94.90211544279009,
+      "cache_path": "/home/arkady/trsh/lap_pe/timing_results/artifacts/sasrec_einv_yelp/20260824_124133_621884/train_val_lap_eigvecs.npy"
+    }
+  ],
+  "preprocessing_totals": {
+    "graph_build_seconds": 132.28967405017465,
+    "eigendecomposition_seconds": 58.45044605061412,
+    "postprocess_and_save_seconds": 0.03402245696634054,
+    "total_preprocessing_seconds": 190.7741425577551
+  },
+  "timing": {
+    "seed": 42,
+    "selected_model_params": {
+      "n_epochs": 20
+    },
+    "final_epochs": 20,
+    "train_total_seconds": 72.3947436613962,
+    "train_seconds_per_epoch": 3.61973718306981,
+    "inference_seconds_per_holdout": [
+      0.7151339408010244,
+      0.8133089281618595,
+      0.8165368596091866,
+      0.8200674410909414,
+      0.8166369497776031,
+      0.818089609965682,
+      0.8183993697166443,
+      0.8173799803480506,
+      0.8205933207646012,
+      0.8170193498954177
+    ],
+    "inference_mean_seconds": 0.8073165750131011,
+    "inference_std_seconds": 0.03245268099126678,
+    "validation_metrics": {
+      "ndcg@100": 0.05719733903266255,
+      "ndcg@10": 0.025101650176860328,
+      "recall@100": 0.21804775280898878,
+      "recall@10": 0.04810393258426966,
+      "coverage@100": 0.4496162741799832,
+      "coverage@10": 0.11779857022708158
+    },
+    "test_metrics": {
+      "ndcg@100": 0.05953913891969489,
+      "ndcg@100_std": 0.0015098301556801356,
+      "ndcg@10": 0.02434335385360608,
+      "ndcg@10_std": 0.0011679879020070661,
+      "recall@100": 0.23348699291711156,
+      "recall@100_std": 0.005376385402025043,
+      "recall@10": 0.04835638138784583,
+      "recall@10_std": 0.0014928010271237338,
+      "coverage@100": 0.6595274390243901,
+      "coverage@100_std": 0.004043080117190951,
+      "coverage@10": 0.22576219512195123,
+      "coverage@10_std": 0.001659336219748385
+    },
+    "runtime_config": {
+      "dataset": {
+        "_target_": "src.datasets.RecSysDataset",
+        "name": "yelp2018_dhg",
+        "url": ""
+      },
+      "metrics": [
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.NDCGMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.RecallMetric",
+          "k": 10
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 100
+        },
+        {
+          "_target_": "src.metrics.CoverageMetric",
+          "k": 10
+        }
+      ],
+      "model": {
+        "_target_": "src.models.sasrec_einv.SASRecEinv",
+        "name": "sasrec_einv_yelp",
+        "seed": 42,
+        "device": "cuda",
+        "lr": 0.002654457743148157,
+        "n_epochs": 20,
+        "hidden_size": 64,
+        "num_blocks": 1,
+        "num_heads": 4,
+        "dropout": 0.5,
+        "seq_len": 200,
+        "batch_size": 512,
+        "filter_seen": true,
+        "max_patience": 10,
+        "lap_eigvec_path": "/home/arkady/trsh/lap_pe/timing_results/artifacts/sasrec_einv_yelp/20260824_124133_621884/train_val_lap_eigvecs.npy"
+      },
+      "seed": 42,
+      "max_top_n": 100
+    }
+  },
+  "source_config": {
+    "dataset": {
+      "_target_": "src.datasets.RecSysDataset",
+      "name": "yelp2018_dhg",
+      "url": ""
+    },
+    "metrics": [
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.NDCGMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.RecallMetric",
+        "k": 10
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 100
+      },
+      {
+        "_target_": "src.metrics.CoverageMetric",
+        "k": 10
+      }
+    ],
+    "model": {
+      "_target_": "src.models.sasrec_einv.SASRecEinv",
+      "name": "sasrec_einv_yelp",
+      "seed": 42,
+      "device": "cuda",
+      "lr": 0.002654457743148157,
+      "n_epochs": 1000,
+      "hidden_size": 64,
+      "num_blocks": 1,
+      "num_heads": 4,
+      "dropout": 0.5,
+      "seq_len": 200,
+      "batch_size": 512,
+      "filter_seen": true,
+      "max_patience": 10,
+      "lap_eigvec_path": null
+    },
+    "seed": 42,
+    "max_top_n": 100
+  }
+}

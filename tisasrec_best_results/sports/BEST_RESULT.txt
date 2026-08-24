@@ -1,0 +1,4 @@
+Best by validation NDCG@10
+max_time_interval: 256
+val/ndcg@10: 0.015647989767796865
+directory: tisasrec_mti_256__Amazon2014-Sports-And-Outdoors__16-19-46

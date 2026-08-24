@@ -53,6 +53,21 @@ def main():
         "--params_file",
         "-pf",
         default="configs/optuna_params/tisasrec.yaml",
+        help=(
+            "YAML file containing categorical max_time_interval choices. "
+            "Ignored when --values is provided."
+        ),
+    )
+    parser.add_argument(
+        "--values",
+        "-v",
+        nargs="+",
+        type=int,
+        default=None,
+        help=(
+            "Explicit max_time_interval values. This avoids the params file, "
+            "for example: --values 16 64 256 512 1024."
+        ),
     )
     parser.add_argument(
         "--python_bin",
@@ -70,8 +85,16 @@ def main():
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
-    params_file = repo_root / args.params_file
-    choices = read_max_time_interval_choices(params_file)
+    if args.values is not None:
+        choices = args.values
+    else:
+        params_file = repo_root / args.params_file
+        choices = read_max_time_interval_choices(params_file)
+
+    if not choices:
+        parser.error("At least one max_time_interval value is required.")
+    if any(value < 0 for value in choices):
+        parser.error("max_time_interval values must be non-negative.")
 
     print(f"max_time_interval choices: {choices}")
     for value in choices:
